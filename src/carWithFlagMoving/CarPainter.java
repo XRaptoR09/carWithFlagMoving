@@ -28,16 +28,14 @@ public class CarPainter extends Frame{
 	static int frameWidth = 1200;
 	static int frameHeight = 1000;
 	int shiftFromFrame = 30, shiftBetweenCars = 50;
-	double angle = 0;
-	double angleRotate = 0.01;
 	int sleep = 1;
 
-	double speed;
-	
+	double speed = 1.0;
+	double boost = 0.001;
 	
 	int leftX = 20;
 //початок координат знаходиться поза фреймом, координати початку фрейму: (8;30)
-	int flagY = 141, flagWidth = 45, flagHeight = 27, amountOfColors;
+	int flagY = 141, flagWidth = 45, flagHeight = 27;
 	
 	int amountOfCars = 4;
 	
@@ -62,7 +60,11 @@ public class CarPainter extends Frame{
 	
 	boolean[] isVerticalFlag = {false, false, true, true};
 	Color[][] flagsColors= {ukraine, germany, france, belgium};
+	
 	//*Counting variables
+	double angle = 0;
+
+	double angleRotate = speed / 25;
 	Color normal = Color.black;
 	int cabinY = flagY + flagstockHeight,
 	
@@ -104,6 +106,8 @@ public class CarPainter extends Frame{
 	fontY = bodyY + fontSize,
 	fontX = leftX + (fontSize / 3) * 10;
 	Color fontColor = (Color.WHITE);
+
+	int count = 0;
 
 	public void update(Graphics g) {
 //		 public void paint(Graphics g) {
@@ -194,7 +198,7 @@ public class CarPainter extends Frame{
 		while((leftX + bodyWidth + animationShift) < frameWidth - shiftFromFrame) {
 			repaint();
 			Thread.sleep(sleep);
-			animationShift += 0.25;
+			animationShift += speed;
 			angle += angleRotate;
 		}
 	}
