@@ -1,7 +1,7 @@
 package carWithFlagMoving;
 
 import java.awt.*;
-import java.awt.event.*; //or: import java.awt.event.WindowAdapter;&import java.awt.event.WindowEvent;
+import java.awt.event.*; 
 import java.awt.geom.*;
 import java.awt.image.BufferedImage;
 
@@ -29,16 +29,18 @@ public class CarPainter extends Frame{
 	static int frameHeight = 1000;
 	int shiftFromFrame = 30, shiftBetweenCars = 50;
 	int sleep = 1;
+	boolean carsAreMoving = false,
+	speedIsIncreasing = false,
+	speedIsReducing = false;
 
-	double speed = 1.0;
-	double boost = 0.001;
+	double speed = 0.5;
+	double boost = 0.000001;
+
+	int btnY = 50, btnWidth = 200, shiftBetweenBtns = 20;
 	
 	int leftX = 20;
 //початок координат знаходиться поза фреймом, координати початку фрейму: (8;30)
 	int flagY = 141, flagWidth = 45, flagHeight = 27;
-	
-	int amountOfCars = 4;
-	
 	
 	int flagstockWidth = 3, flagstockHeight = 40;
 	
@@ -47,21 +49,24 @@ public class CarPainter extends Frame{
 	
 	int bodyHeight = 30;
 	//!Enter bodycolors in states' order
-	Color[] bodyColors = {(new Color(0x009000)), (new Color(0x008000)), (new Color(0x2E8B57)), (new Color(0x6B9E23))};
+	Color[] bodyColors = {new Color(0x009000), new Color(0x008000), new Color(0x228B22), new Color(0x2E8B57), new Color (0xDAA520)};
 	
 	int wheelPadding = 20, wheelDiameter = 30;
 	
-	String[] states = {"Ukraine", "Germany", "France", "Belgium"};
+	String[] states = {"Ukraine", "Germany", "France", "Belgium", "Italy"};
 	
 	Color[] ukraine = {Color.blue, Color.yellow};
 	Color[] germany = {Color.black, Color.red, Color.yellow};
 	Color[] france = {Color.blue.darker(), Color.white, Color.red};
 	Color[] belgium = {Color.blue.darker(), Color.yellow, Color.red};
+	Color[] italy = {Color.green.darker(), Color.white, Color.red};
 	
-	boolean[] isVerticalFlag = {false, false, true, true};
-	Color[][] flagsColors= {ukraine, germany, france, belgium};
+	boolean[] isVerticalFlag = {false, false, true, true, true};
+	Color[][] flagsColors= {ukraine, germany, france, belgium, italy};
 	
 	//*Counting variables
+	int btnHeight = btnWidth / 4;
+
 	double angle = 0;
 
 	double angleRotate = speed / 25;
@@ -105,25 +110,49 @@ public class CarPainter extends Frame{
 	int fontSize = 15,
 	fontY = bodyY + fontSize,
 	fontX = leftX + (fontSize / 3) * 10;
-	Color fontColor = (Color.WHITE);
+	Color[] fontColor = {Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, new Color(0x1E90FF)};
 
-	int count = 0;
+	double firstBoost = boost;
 
 	public void update(Graphics g) {
 //		 public void paint(Graphics g) {
+	//*Start button*/
+	Button start = new Button("START");
+	start.setBackground(Color.green.darker());
+	start.setBounds(leftX, btnY, btnWidth, btnHeight);
+	add(start);
+	start.addActionListener(new ActionListener() {
+		public void actionPerformed(ActionEvent ae) {        
+			carsAreMoving = !carsAreMoving;
+			if (carsAreMoving) {
+				start.setBackground(Color.red.darker());
+				start.setLabel("PAUSE");
+			}else{
+				start.setBackground(Color.green.darker());
+				start.setLabel("START");
+			}
+		}
+	});
+	//*Reset button*/
+	Button reset = new Button("RESET");
+	reset.setBackground(new Color (0x1E90FF));
+	reset.setBounds(leftX + btnWidth + shiftBetweenBtns, btnY, btnWidth, btnHeight);
+	add(reset);
+	reset.addActionListener(new ActionListener() {
+		public void actionPerformed(ActionEvent res) {
+			animationShift = 0;
+			start.setBackground(Color.green.darker());
+			start.setLabel("START");
+			carsAreMoving = false;
+		}
+	});
+
 		int w = getSize().width, h = getSize().height;
 		BufferedImage bi = (BufferedImage) createImage(w, h);
 		Graphics2D big = bi.createGraphics(); // 3
-		//!Amount of graphics should == flagsColors.length!
-		Graphics2D[] wheelLeftGraph = {bi.createGraphics(), bi.createGraphics(), bi.createGraphics(), bi.createGraphics()}; // 3
-		Graphics2D[] wheelRightGraph = {bi.createGraphics(), bi.createGraphics(), bi.createGraphics(), bi.createGraphics()}; // 3
-	
-		// Graphics2D wheelLeft2 = bi.createGraphics(); // 3
-		// Graphics2D wheelRight2 = bi.createGraphics(); // 3
 
 		//! //////////////////
 		for(int q = 0; q < flagsColors.length; q++) {
-			
 			for(int d = 0; d < flagsColors[q].length; d++) {
 				if (isVerticalFlag[q]) {
 					colorWidth = flagWidth / flagsColors[q].length;
@@ -161,13 +190,16 @@ public class CarPainter extends Frame{
 			GeneralPath leftLines = new GeneralPath(horLeftLine);
 			leftLines.append(vertLeftLine, false);
 
-			wheelLeftGraph[q].rotate(angle, leftWheelCenterX + animationShift, wheelCenterY + (carHeight + shiftBetweenCars) * q);
-			wheelLeftGraph[q].setColor(wheelColor);
-			wheelLeftGraph[q].fill(leftWheel);
-			wheelLeftGraph[q].setColor(lineColor);
-			wheelLeftGraph[q].draw(leftLines);;
-			wheelLeftGraph[q].setColor(wheelColor);
-			wheelLeftGraph[q].draw(leftWheel);
+			Graphics2D wheelLeftGraph = bi.createGraphics(); // 3
+			Graphics2D wheelRightGraph = bi.createGraphics(); // 3
+
+			wheelLeftGraph.rotate(angle, leftWheelCenterX + animationShift, wheelCenterY + (carHeight + shiftBetweenCars) * q);
+			wheelLeftGraph.setColor(wheelColor);
+			wheelLeftGraph.fill(leftWheel);
+			wheelLeftGraph.setColor(lineColor);
+			wheelLeftGraph.draw(leftLines);
+			wheelLeftGraph.setColor(wheelColor);
+			wheelLeftGraph.draw(leftWheel);
 	
 			//!wheel2
 			Ellipse2D.Double rightWheel = new Ellipse2D.Double(rightWheelX + animationShift, wheelY + (carHeight + shiftBetweenCars) * q, wheelDiameter, wheelDiameter);
@@ -177,29 +209,37 @@ public class CarPainter extends Frame{
 			GeneralPath rightLines = new GeneralPath(horRightLine);
 			rightLines.append(vertRightLine, false);
 
-			wheelRightGraph[q].rotate(angle, rightWheelCenterX + animationShift, wheelCenterY + (carHeight + shiftBetweenCars) * q);
-			wheelRightGraph[q].setColor(wheelColor);
-			wheelRightGraph[q].fill(rightWheel);
-			wheelRightGraph[q].setColor(lineColor);
-			wheelRightGraph[q].draw(rightLines);
-			wheelRightGraph[q].setColor(wheelColor);
-			wheelRightGraph[q].draw(rightWheel);
+			wheelRightGraph.rotate(angle, rightWheelCenterX + animationShift, wheelCenterY + (carHeight + shiftBetweenCars) * q);
+			wheelRightGraph.setColor(wheelColor);
+			wheelRightGraph.fill(rightWheel);
+			wheelRightGraph.setColor(lineColor);
+			wheelRightGraph.draw(rightLines);
+			wheelRightGraph.setColor(wheelColor);
+			wheelRightGraph.draw(rightWheel);
 			
 			g.setFont(new Font("Arial", Font.BOLD, fontSize));
-			big.setColor(fontColor);
+			big.setColor(fontColor[q]);
 			big.drawString(states[q].toUpperCase(), (int)fontX + (int)animationShift, (int)fontY + (int)((carHeight + shiftBetweenCars) * q));
 		}
 		
 		//! //////////////////////////////////////
 		g.drawImage(bi, 0, 0, this);
 	}
+	
 	public void go() throws Exception{
-		
-		while((leftX + bodyWidth + animationShift) < frameWidth - shiftFromFrame) {
+		while (true){
 			repaint();
 			Thread.sleep(sleep);
-			animationShift += speed;
-			angle += angleRotate;
+			if (carsAreMoving) {
+				if((leftX + bodyWidth + animationShift) < frameWidth - shiftFromFrame) {
+					{
+						speed += boost;
+						boost = boost + firstBoost;
+					}
+					animationShift += speed;
+					angle += angleRotate;
+				}
+			}
 		}
 	}
 }
