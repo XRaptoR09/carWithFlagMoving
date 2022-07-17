@@ -1,5 +1,6 @@
 package carWithFlagMoving;
 
+import java.util.*;
 import java.awt.*;
 import java.awt.event.*; 
 import java.awt.geom.*;
@@ -34,7 +35,7 @@ public class CarPainter extends Frame{
 	speedIsReducing = false;
 
 	double speed = 0.5;
-	double boost = 0.000001;
+	double boost = 0.0009;
 
 	int btnY = 50, btnWidth = 200, shiftBetweenBtns = 20;
 	
@@ -146,6 +147,26 @@ public class CarPainter extends Frame{
 			carsAreMoving = false;
 		}
 	});
+	//*SpeedUP button*/
+	Button speedUp = new Button("SPEED UP");
+	speedUp.setBackground(new Color (0xD2691E));
+	speedUp.setBounds(leftX + btnWidth * 2 + shiftBetweenBtns * 2, btnY, btnWidth, btnHeight);
+	add(speedUp);
+	speedUp.addActionListener(new ActionListener() {
+		public void actionPerformed(ActionEvent res) {
+			speedIsIncreasing = true;
+		}
+	});
+	//*SpeedDOWN button*/
+	Button speedDown = new Button("SPEED DOWN");
+	speedDown.setBackground(new Color (0xD2691E));
+	speedDown.setBounds(leftX + btnWidth * 3 + shiftBetweenBtns * 3, btnY, btnWidth, btnHeight);
+	add(speedDown);
+	speedDown.addActionListener(new ActionListener() {
+		public void actionPerformed(ActionEvent res) {
+			speedIsReducing = true;
+		}
+	});
 
 		int w = getSize().width, h = getSize().height;
 		BufferedImage bi = (BufferedImage) createImage(w, h);
@@ -232,11 +253,20 @@ public class CarPainter extends Frame{
 			Thread.sleep(sleep);
 			if (carsAreMoving) {
 				if((leftX + bodyWidth + animationShift) < frameWidth - shiftFromFrame) {
-					{
+					if (speedIsIncreasing) {
 						speed += boost;
 						boost = boost + firstBoost;
+						animationShift += speed;
+					}else if (speedIsReducing){
+						speed -= boost;
+						boost = boost - firstBoost;
+						animationShift += speed;
+					}else{
+						// animationShift++;
+						animationShift += speed;
 					}
-					animationShift += speed;
+					// speedIsIncreasing = false;
+					speedIsReducing = false;
 					angle += angleRotate;
 				}
 			}
